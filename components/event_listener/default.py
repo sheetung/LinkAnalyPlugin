@@ -43,6 +43,14 @@ class DefaultEventListener(EventListener):
             "gitee": {
                 "patterns": [r"gitee\.com/([^/]+)/([^/?#]+)"],
                 "handler": self.handle_gitee
+            },
+            "youtube": {
+                "patterns": [
+                    r'www.youtube.com/watch\?v=([\w-]{11})',
+                    r'youtu.be/([\w-]{11})',
+                    r'youtube.com/shorts/([\w-]{11})'
+                ],
+                "handler": self.handle_youtube
             }
         }
 
@@ -164,3 +172,46 @@ class DefaultEventListener(EventListener):
                     platform_message.Plain(text="仓库信息获取失败")
                 ])
             )
+    # ------------------ Youtube处理 ------------------
+    async def handle_youtube(self, event_context: context.EventContext, match: re.Match):
+        video_id = match.group(1)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36'
+        }
+        key = self.get_config["youtube_key"]
+        try:
+            response = requests.get(f"https://www.googleapis.com/youtube/v3/videos?id={yt_id}&key={key}&part=snippet", headers=headers)
+            data = response.json()
+            if data['pageInfo']['totalResults'] != 0:
+                snippet = data['items'][0]['snippet']
+                title = snippet['title']
+                description = snippet['description']
+                channelTitle = snippet['channelTitle']
+                thumbnails = snippet['thumbnails']
+                publishedAt = snippet['publishedAt']
+                tagString = ""
+                tags = snippet.get("tags")
+                if tags:
+                    tagString = ", ".join(tags)
+                else:
+                    tagString = "无"
+                thumbnailUrl = thumbnails['maxres']['url'] if thumbnails['maxres'] else thumbnails['high']['url']
+                message_youtube = [
+                    f"频道：{channelTitle}",
+                    f"标题：{title}",
+                    f"时间：{publishedAt}",
+                    f"链接：http://youtu.be/{video_id}"
+
+                ]
+                await event_context.reply(platform_message.Message_Chain([
+                    platform_message.Image(url=thumbnailUrl),
+                    platform_message.Plain(text="\n".join(message_youtube))
+                ]))
+            else:
+                await event_context.reply(platform_message.Message_Chain([
+                    platform_message.Plain(text="视频解析失败")
+                ]))
+        except Exception as e:
+            await event_context.reply(platform_message.Message_Chain([
+                platform_message.Plain(text=f"视频解析失败")
+            ]))
