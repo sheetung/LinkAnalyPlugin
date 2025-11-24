@@ -7,6 +7,7 @@
 1. bilibili
 2. github
 3. gitee
+4. youtube
 
 ## 问题反馈及功能开发
 

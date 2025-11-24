@@ -13,7 +13,15 @@ metadata:
     zh_Hans: 链接解析
   icon: assets/favicon.ico
 spec:
-  config: []
+  config: 
+    - name: youtube_key
+      type: string
+      label:
+        en_US: Youtube API Key
+        zh_Hans: Youtube API Key
+      description:
+        en_US: Please follow https://developers.google.com/youtube/v3/getting-started to get your key.
+        zh_Hans: 请参照https://developers.google.com/youtube/v3/getting-started获取密钥
   components:
     EventListener:
       fromDirs:
