@@ -81,24 +81,31 @@ class DefaultEventListener(EventListener):
             video_data = data['data']
             stat_data = video_data['stat']
 
+            # 处理描述信息
             description = video_data.get('desc') or video_data.get('dynamic', '')
+            desc_line = None
             if isinstance(description, str) and len(description) > 0:
-                description = f"📝 描述：{description[:97]}..." if len(description) > 100 else f"📝 描述：{description}"
-            else:
-                description = None
+                # 移除换行符并限制长度
+                clean_desc = description.replace("\n", " ").strip()
+                desc_line = f"📝 简介：{clean_desc[:97]}..." if len(clean_desc) > 100 else f"📝 简介：{clean_desc}"
 
+            # 构建消息
             message_b = [
-                f"🎐 标题：{video_data['title']}",
-                f"😃 UP主：{video_data['owner']['name']}"
+                f"📺 Bilibili 视频 | {video_data['title']}",
+                f"👤 UP主：{video_data['owner']['name']}",
             ]
-            if description:
-                message_b.append(description.replace("\n", ""))
+
+            if desc_line:
+                message_b.append(desc_line)
 
             message_b.extend([
-                f"💖 点赞：{self._format_count(stat_data.get('like', 0))}  ",
-                f"🪙 投币：{self._format_count(stat_data.get('coin', 0))}  ",
-                f"✨ 收藏：{self._format_count(stat_data.get('favorite', 0))}",
-                f"🌐 链接：https://www.bilibili.com/video/{video_id}"
+                f"💖 {self._format_count(stat_data.get('like', 0))}  "
+                f"🪙 {self._format_count(stat_data.get('coin', 0))}  "
+                f"⭐ {self._format_count(stat_data.get('favorite', 0))}",
+                f"👁️ 播放：{self._format_count(stat_data.get('view', 0))}  "
+                f"💬 评论：{self._format_count(stat_data.get('reply', 0))}",
+                "─" * 3,
+                f"🔗 https://www.bilibili.com/video/{video_id}"
             ])
 
             await event_context.reply(
@@ -111,7 +118,7 @@ class DefaultEventListener(EventListener):
         except Exception as e:
             await event_context.reply(
                 platform_message.MessageChain([
-                    platform_message.Plain(text="视频解析失败")
+                    platform_message.Plain(text="❌ 视频解析失败，请稍后重试")
                 ])
             )
 
@@ -141,15 +148,27 @@ class DefaultEventListener(EventListener):
 
             stars = self._format_count(data.get('stargazers_count', 0))
             forks = self._format_count(data.get('forks_count', 0))
+            watchers = self._format_count(data.get('watchers_count', 0))
+
+            # 处理描述信息
+            description = data.get('description', '')
+            if description and len(description) > 0:
+                clean_desc = description.replace("\n", " ").strip()
+                desc_text = f"📝 {clean_desc[:97]}..." if len(clean_desc) > 100 else f"📝 {clean_desc}"
+            else:
+                desc_text = "📝 暂无描述"
+
+            # 获取主要编程语言
+            language = data.get('language', '未知')
 
             message_git = [
-                "━" * 3,
-                f"📦 {platform} 仓库：{data['name']}",
-                f"📄 描述：{data.get('description', '暂无')}",
-                f"⭐ Stars: {stars}",
-                f"🍴 Forks: {forks}",
-                "━" * 3,
-                f"🌐 链接：{data['html_url']}"
+                f"📦 {platform} 仓库 | {data['name']}",
+                f"👤 作者：{owner}",
+                desc_text,
+                 "─" * 3,
+                f"⭐ {stars} | 🍴 {forks}",
+                f"💻 语言：{language}",
+                f"🔗 {data['html_url']}"
             ]
 
             await event_context.reply(
@@ -161,6 +180,6 @@ class DefaultEventListener(EventListener):
         except Exception as e:
             await event_context.reply(
                 platform_message.MessageChain([
-                    platform_message.Plain(text="仓库信息获取失败")
+                    platform_message.Plain(text=f"❌ {platform} 仓库信息获取失败，请稍后重试")
                 ])
             )

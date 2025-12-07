@@ -4,7 +4,7 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 0.1.2
+  version: 0.2.2
   description:
     en_US: Parse links in chats
     zh_Hans: 解析聊天中的链接

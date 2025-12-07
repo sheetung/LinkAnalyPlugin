@@ -4,9 +4,13 @@
 
 ## 支持平台
 
-1. bilibili
-2. github
-3. gitee
+1. BiliBili
+2. Github
+3. Gitee
+
+## 更新历史
+
+- V0.2.2 完善基础功能开发并优化显示
 
 ## 问题反馈及功能开发
 
