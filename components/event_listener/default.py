@@ -33,7 +33,7 @@ class DefaultEventListener(EventListener):
                     r"www\.bilibili\.com/video/(BV\w+)",
                     r"b23\.tv/(BV\w+)",
                     r"www\.bilibili\.com/video/av(\d+)",
-                    r"b23\.tv/(av\w+)"
+                    r"b23\.tv/(av\d+)"
                 ],
                 "handler": self.handle_bilibili
             },
@@ -73,7 +73,7 @@ class DefaultEventListener(EventListener):
     # ------------------ B站处理 ------------------
     async def handle_bilibili(self, event_context: context.EventContext, match: re.Match):
         id_type = "BV" if "BV" in match.group(0) else "av"
-        video_id = match.group(1)
+        video_id = match.group(1) if id_type == "BV" else match.group(1).lstrip("av")
 
         api_url = (
             f"https://api.bilibili.com/x/web-interface/view?bvid={video_id}"
