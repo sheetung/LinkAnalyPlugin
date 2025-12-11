@@ -32,7 +32,8 @@ class DefaultEventListener(EventListener):
                 "patterns": [
                     r"www\.bilibili\.com/video/(BV\w+)",
                     r"b23\.tv/(BV\w+)",
-                    r"www\.bilibili\.com/video/av(\d+)"
+                    r"www\.bilibili\.com/video/av(\d+)",
+                    r"b23\.tv/(av\w+)"
                 ],
                 "handler": self.handle_bilibili
             },
