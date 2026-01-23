@@ -6,13 +6,15 @@ from typing import Optional, Tuple
 from langbot_plugin.api.definition.components.common.event_listener import EventListener
 from langbot_plugin.api.entities import events, context
 from langbot_plugin.api.entities.builtin.platform import message as platform_message
+from langbot_plugin.api.entities.builtin.provider import message as provider_message
 
 
 class DefaultEventListener(EventListener):
 
-    def __init__(self):
-        super().__init__()
+    async def initialize(self):
+        await super().initialize()
 
+        self.screensnap_enabled = self.plugin.get_config().get("screenshotsnap", False)
         # 注册消息事件处理
         @self.handler(events.PersonMessageReceived)
         @self.handler(events.GroupMessageReceived)
@@ -43,6 +45,11 @@ class DefaultEventListener(EventListener):
             "gitee": {
                 "patterns": [r"gitee\.com/([^/]+)/([^/?#]+)"],
                 "handler": self.handle_gitee
+            },
+            "screenshot": {
+                "patterns": [r"(https?://[^\s]+)"],
+                "handler": self.handle_screenshot,
+                "priority": -1  # 最低优先级，作为兜底
             }
         }
 
@@ -181,5 +188,54 @@ class DefaultEventListener(EventListener):
             await event_context.reply(
                 platform_message.MessageChain([
                     platform_message.Plain(text=f"❌ {platform} 仓库信息获取失败，请稍后重试")
+                ])
+            )
+
+    # ------------------ 网站截图处理 ------------------
+    async def handle_screenshot(self, event_context: context.EventContext, match: re.Match):
+        """使用 screenshotsnap.com API 获取网站截图"""
+        if not self.screensnap_enabled:
+            return
+
+        url = match.group(1)
+
+        # 排除已被其他处理器处理的链接
+        excluded_patterns = [
+            r"bilibili\.com", r"b23\.tv",
+            r"github\.com/[^/]+/[^/?#]+",
+            r"gitee\.com/[^/]+/[^/?#]+"
+        ]
+        for pattern in excluded_patterns:
+            if re.search(pattern, url):
+                return
+
+        try:
+            # 调用 screenshotsnap API 获取截图
+            api_url = f"https://screenshotsnap.com/api/screenshot?url={url}&format=webp"
+            resp = requests.get(api_url, timeout=30)
+
+            if resp.status_code != 200:
+                raise ValueError(f"Screenshot API returned {resp.status_code}")
+
+            # 检查返回的是否是图片
+            content_type = resp.headers.get('Content-Type', '')
+            if 'image' not in content_type:
+                raise ValueError("API did not return an image")
+
+            # 由于 API 返回的是二进制图片，我们需要使用 base64
+            import base64
+            image_base64 = base64.b64encode(resp.content).decode('utf-8')
+
+            await event_context.reply(
+                platform_message.MessageChain([
+                    platform_message.Plain(text=f"🌐 网站截图 | {url}\n"),
+                    platform_message.Image(base64=image_base64)
+                ])
+            )
+
+        except Exception as e:
+            await event_context.reply(
+                platform_message.MessageChain([
+                    platform_message.Plain(text=f"❌ 网站截图获取失败：{str(e)}")
                 ])
             )

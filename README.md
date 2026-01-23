@@ -1,16 +1,18 @@
 # LinkAnaly
 
-对聊天中的链接进行解析
+Parses links in chats and sends screenshots for unparsed websites
 
-## 支持的链接
+## Supported Links
 
-1. BiliBili
-2. Github
+1. Bilibili
+2. GitHub
 3. Gitee
+4. Screenshot function for other websites(Manually enable in the plugin settings)
 
-## 更新历史
+## Update History
 
-- V0.2.2 完善基础功能开发并优化显示
+- v1.0.1 Added website screenshot function
+- v0.2.2 Improved basic function development and optimized display
 
 ## 问题反馈及功能开发
 

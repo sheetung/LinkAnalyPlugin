@@ -4,16 +4,23 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 0.2.2
+  version: 1.0.2
   description:
-    en_US: Parse links in chats
-    zh_Hans: 解析聊天中的链接
+    en_US: Parses links in chats and sends screenshots for unparsed websites
+    zh_Hans: 对聊天中的链接进行解析,以及针对未解析网站截图发送
   label:
     en_US: LinkAnaly
     zh_Hans: 链接解析
   icon: assets/favicon.ico
 spec:
-  config: []
+  config:
+    - name: screenshotsnap
+      type: boolean
+      label:
+        en_US: 'Enable web screenshot feature'
+        zh_Hans: '是否启用web截图功能'
+      required: false
+      default: false
   components:
     EventListener:
       fromDirs:
