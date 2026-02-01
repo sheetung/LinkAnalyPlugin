@@ -122,12 +122,18 @@ class DefaultEventListener(EventListener):
                 ])
             )
 
+            # 阻止默认行为
+            event_context.prevent_default()
+
         except Exception as e:
             await event_context.reply(
                 platform_message.MessageChain([
                     platform_message.Plain(text="❌ 视频解析失败，请稍后重试")
                 ])
             )
+
+            # 阻止默认行为
+            event_context.prevent_default()
 
     # ------------------ GitHub 处理 ------------------
     async def handle_github(self, event_context: context.EventContext, match: re.Match):
@@ -183,6 +189,8 @@ class DefaultEventListener(EventListener):
                     platform_message.Plain(text="\n".join(message_git))
                 ])
             )
+            # 阻止默认行为
+            event_context.prevent_default()
 
         except Exception as e:
             await event_context.reply(
@@ -190,6 +198,9 @@ class DefaultEventListener(EventListener):
                     platform_message.Plain(text=f"❌ {platform} 仓库信息获取失败，请稍后重试")
                 ])
             )
+
+            # 阻止默认行为
+            event_context.prevent_default()
 
     # ------------------ 网站截图处理 ------------------
     async def handle_screenshot(self, event_context: context.EventContext, match: re.Match):
@@ -233,9 +244,18 @@ class DefaultEventListener(EventListener):
                 ])
             )
 
+            # 阻止默认行为
+            event_context.prevent_default()
+
         except Exception as e:
-            await event_context.reply(
-                platform_message.MessageChain([
-                    platform_message.Plain(text=f"❌ 网站截图获取失败：{str(e)}")
+            # await event_context.reply(
+            #     platform_message.MessageChain([
+            #         platform_message.Plain(text=f"❌ 网站截图获取失败：{str(e)}")
+            #     ])
+            # )
+            platform_message.MessageChain([
+                    platform_message.Plain(text=f"❌ 网站截图获取失败 | {url}\n手动访问试试吧！"),
                 ])
-            )
+            
+            # 阻止默认行为
+            event_context.prevent_default()

@@ -4,7 +4,7 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 1.0.2
+  version: 1.0.5
   description:
     en_US: Parses links in chats and sends screenshots for unparsed websites
     zh_Hans: 对聊天中的链接进行解析,以及针对未解析网站截图发送
