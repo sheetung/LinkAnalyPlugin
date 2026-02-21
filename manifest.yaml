@@ -4,7 +4,7 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 1.0.5
+  version: 1.5.1
   description:
     en_US: Parses links in chats and sends screenshots for unparsed websites
     zh_Hans: 对聊天中的链接进行解析,以及针对未解析网站截图发送
@@ -14,13 +14,34 @@ metadata:
   icon: assets/favicon.ico
 spec:
   config:
+    - name: enable_github_gitee
+      type: boolean
+      label:
+        en_US: 'Enable github/gitee feature'
+        zh_Hans: '是否启用github/gitee解析'
+      required: false
+      default: true
+    - name: enable_bilibili
+      type: boolean
+      label:
+        en_US: 'Enable bilibili feature'
+        zh_Hans: '是否启用bilibili解析'
+      required: false
+      default: true
+    - name: enable_douyin
+      type: boolean
+      label:
+        en_US: 'Enable douyin feature'
+        zh_Hans: '是否启用抖音解析'
+      required: false
+      default: true
     - name: screenshotsnap
       type: boolean
       label:
         en_US: 'Enable web screenshot feature'
         zh_Hans: '是否启用web截图功能'
       required: false
-      default: false
+      default: true
   components:
     EventListener:
       fromDirs:

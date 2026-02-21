@@ -7,7 +7,8 @@ Parses links in chats and sends screenshots for unparsed websites
 1. Bilibili
 2. GitHub
 3. Gitee
-4. Screenshot function for other websites(Manually enable in the plugin settings)
+4. Douyin
+5. Screenshot function for other websites(Manually enable in the plugin settings)
 
 ## Update History
 
