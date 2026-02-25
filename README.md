@@ -8,10 +8,15 @@ Parses links in chats and sends screenshots for unparsed websites
 2. GitHub
 3. Gitee
 4. Douyin
-5. Screenshot function for other websites(Manually enable in the plugin settings)
+5. Acfun
+6. ~~Weibo~~
+7. ~~NGA~~
+8. ~~XHS~~
+9. Screenshot function for other websites(Manually enable in the plugin settings)
 
 ## Update History
 
+- v1.5.3 Added Acfun parser
 - v1.0.1 Added website screenshot function
 - v0.2.2 Improved basic function development and optimized display
 

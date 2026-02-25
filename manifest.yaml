@@ -4,7 +4,7 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 1.5.1
+  version: 1.5.3
   description:
     en_US: Parses links in chats and sends screenshots for unparsed websites
     zh_Hans: 对聊天中的链接进行解析,以及针对未解析网站截图发送
@@ -35,6 +35,34 @@ spec:
         zh_Hans: '是否启用抖音解析'
       required: false
       default: true
+    - name: enable_acfun
+      type: boolean
+      label:
+        en_US: 'Enable acfun feature'
+        zh_Hans: '是否启用acfun解析'
+      required: false
+      default: true
+    # - name: enable_weibo
+    #   type: boolean
+    #   label:
+    #     en_US: 'Enable weibo feature'
+    #     zh_Hans: '是否启用微博解析'
+    #   required: false
+    #   default: true
+    # - name: enable_nga
+    #   type: boolean
+    #   label:
+    #     en_US: 'Enable nga feature'
+    #     zh_Hans: '是否启用nga解析'
+    #   required: false
+    #   default: true
+    # - name: enable_xhs
+    #   type: boolean
+    #   label:
+    #     en_US: 'Enable xhs feature'
+    #     zh_Hans: '是否启用小红书解析'
+    #   required: false
+    #   default: true
     - name: screenshotsnap
       type: boolean
       label:
