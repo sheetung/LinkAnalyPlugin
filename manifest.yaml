@@ -4,7 +4,7 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 1.5.3
+  version: 1.6.3
   description:
     en_US: Parses links in chats and sends screenshots for unparsed websites
     zh_Hans: 对聊天中的链接进行解析,以及针对未解析网站截图发送
@@ -70,6 +70,33 @@ spec:
         zh_Hans: '是否启用web截图功能'
       required: false
       default: true
+    - name: enable_youtube
+      type: boolean
+      label:
+        en_US: 'Enable youtube feature'
+        zh_Hans: '是否启用youtube解析'
+      required: false
+      default: false
+    - name: youtube_key
+      type: string
+      label:
+        en_US: 'YouTube API Key'
+        zh_Hans: 'YouTube API Key'
+      description:
+        en_US: 'Please follow https://developers.google.com/youtube/v3/getting-started to get your key.'
+        zh_Hans: '请参照https://developers.google.com/youtube/v3/getting-started获取密钥'
+      required: false
+      default: ""
+    - name: youtube_proxy
+      type: string
+      label:
+        en_US: 'YouTube HTTP Proxy'
+        zh_Hans: 'YouTube HTTP代理'
+      description:
+        en_US: 'HTTP proxy for YouTube API requests (format: http://host:port)'
+        zh_Hans: 'YouTube API请求的HTTP代理（格式：http://host:port）'
+      required: false
+      default: "http://127.0.0.1:7890"
   components:
     EventListener:
       fromDirs:

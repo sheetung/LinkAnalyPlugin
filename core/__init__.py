@@ -6,5 +6,6 @@ from .acfun import AcFunParser
 from .weibo import WeiboParser
 from .nga import NGAParser
 from .xhs import XHSparser
+from .youtube import YoutubeParser
 
-__all__ = ["BilibiliParser", "GitParser", "DouyinParser", "ScreenshotParser", "AcFunParser", "WeiboParser", "NGAParser", "XHSparser"]
+__all__ = ["BilibiliParser", "GitParser", "DouyinParser", "ScreenshotParser", "AcFunParser", "WeiboParser", "NGAParser", "XHSparser", "YoutubeParser"]

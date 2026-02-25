@@ -12,7 +12,7 @@ from langbot_plugin.api.entities import events, context
 from langbot_plugin.api.entities.builtin.platform import message as platform_message
 from langbot_plugin.api.entities.builtin.provider import message as provider_message
 
-from core import BilibiliParser, GitParser, DouyinParser, ScreenshotParser, AcFunParser, WeiboParser, NGAParser, XHSparser
+from core import BilibiliParser, GitParser, DouyinParser, ScreenshotParser, AcFunParser, WeiboParser, NGAParser, XHSparser, YoutubeParser
 
 
 class DefaultEventListener(EventListener):
@@ -28,6 +28,7 @@ class DefaultEventListener(EventListener):
         self.enable_weibo = self.plugin.get_config().get("enable_weibo", False)
         self.enable_nga = self.plugin.get_config().get("enable_nga", False)
         self.enable_xhs = self.plugin.get_config().get("enable_xhs", False)
+        self.enable_youtube = self.plugin.get_config().get("enable_youtube", True)
         
         # 初始化解析器
         self.bilibili_parser = BilibiliParser(self.plugin)
@@ -38,6 +39,7 @@ class DefaultEventListener(EventListener):
         self.weibo_parser = WeiboParser(self.plugin)
         self.nga_parser = NGAParser(self.plugin)
         self.xhs_parser = XHSparser(self.plugin)
+        self.youtube_parser = YoutubeParser(self.plugin)
         
         # 注册消息事件处理
         @self.handler(events.PersonMessageReceived)
@@ -61,6 +63,7 @@ class DefaultEventListener(EventListener):
                         message_chain = []
                         
                         # 添加图片（如果有）
+                        # 对于YouTube，始终不发送图片，避免网络问题
                         if result.get("image_url"):
                             message_chain.append(platform_message.Image(url=result["image_url"]))
                         elif result.get("image_base64"):
@@ -69,17 +72,25 @@ class DefaultEventListener(EventListener):
                         # 添加文本消息
                         message_chain.append(platform_message.Plain(text=result["message"]))
                         
-                        # 发送回复
-                        await event_context.reply(
-                            platform_message.MessageChain(message_chain)
-                        )
+                        # 发送回复，添加异常处理
+                        try:
+                            await event_context.reply(
+                                platform_message.MessageChain(message_chain)
+                            )
+                        except Exception as e:
+                            # 发送消息失败，记录错误但不中断执行
+                            print(f"发送消息失败: {str(e)}")
                     else:
-                        # 发送错误消息
-                        await event_context.reply(
-                            platform_message.MessageChain([
-                                platform_message.Plain(text=result["message"])
-                            ])
-                        )
+                        # 发送错误消息，添加异常处理
+                        try:
+                            await event_context.reply(
+                                platform_message.MessageChain([
+                                    platform_message.Plain(text=result["message"])
+                                ])
+                            )
+                        except Exception as e:
+                            # 发送消息失败，记录错误但不中断执行
+                            print(f"发送错误消息失败: {str(e)}")
                     
                     # 阻止默认行为
                     event_context.prevent_default()
@@ -166,6 +177,17 @@ class DefaultEventListener(EventListener):
                     r"xiaohongshu\.com/discovery/item/(\w+)"
                 ],
                 "handler": self.xhs_parser.handle
+            }
+        
+        # 根据配置添加YouTube支持
+        if self.enable_youtube:
+            self.link_handlers["youtube"] = {
+                "patterns": [
+                    r'www\.youtube\.com/watch\?v=([\w-]{11})',
+                    r'youtu\.be/([\w-]{11})',
+                    r'youtube\.com/shorts/([\w-]{11})'
+                ],
+                "handler": self.youtube_parser.handle
             }
         
         # 添加截图支持
