@@ -1,4 +1,4 @@
-# LinkAnaly
+# LinkAnalyPlugin
 
 Parses links in chats and sends screenshots for unparsed websites
 
