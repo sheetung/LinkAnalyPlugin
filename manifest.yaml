@@ -4,7 +4,7 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 1.6.3
+  version: 1.6.5
   description:
     en_US: Parses links in chats and sends screenshots for unparsed websites
     zh_Hans: 对聊天中的链接进行解析,以及针对未解析网站截图发送
@@ -79,6 +79,10 @@ spec:
       default: false
     - name: youtube_key
       type: string
+      show_if:
+        field: enable_youtube
+        operator: 'eq'
+        value: true
       label:
         en_US: 'YouTube API Key'
         zh_Hans: 'YouTube API Key'
@@ -89,6 +93,10 @@ spec:
       default: ""
     - name: youtube_proxy
       type: string
+      show_if:
+        field: enable_youtube
+        operator: 'eq'
+        value: true
       label:
         en_US: 'YouTube HTTP Proxy'
         zh_Hans: 'YouTube HTTP代理'

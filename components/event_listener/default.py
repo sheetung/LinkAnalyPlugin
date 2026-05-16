@@ -46,6 +46,7 @@ class DefaultEventListener(EventListener):
         @self.handler(events.GroupMessageReceived)
         async def handler(event_context: context.EventContext):
             msg = str(event_context.event.message_chain).strip()
+            # print(f"Received message: {event_context}")
 
             # 遍历所有支持平台
             for platform in self.link_handlers.values():
