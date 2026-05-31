@@ -22,6 +22,13 @@
 - v1.0.1 增加网站截图功能
 - v0.2.2 完善基础功能开发并优化显示
 
+## 致谢
+
+感谢以下贡献者对本项目的支持：
+
+- [1dabai](https://github.com/1dabai)
+- [Garrise](https://github.com/Garrise)
+
 ## 问题反馈及功能开发
 
 [![QQ群](https://img.shields.io/badge/QQ群-965312424-green)](https://qm.qq.com/cgi-bin/qm/qr?k=en97YqjfYaLpebd9Nn8gbSvxVrGdIXy2&jump_from=webapi&authKey=41BmkEjbGeJ81jJNdv7Bf5EDlmW8EHZeH7/nktkXYdLGpZ3ISOS7Ur4MKWXC7xIx)
