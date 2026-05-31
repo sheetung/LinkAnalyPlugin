@@ -2,6 +2,8 @@
 
 Parses links in chats and sends screenshots for unparsed websites
 
+[中文](readme/README_zh_Hans.md)
+
 ## Supported Links
 
 1. Bilibili
