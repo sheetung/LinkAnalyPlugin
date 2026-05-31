@@ -1,6 +1,7 @@
 from __future__ import annotations
 import re
 import logging
+import urllib.parse
 from typing import Optional, Tuple
 import sys
 import os
@@ -13,7 +14,6 @@ from langbot_plugin.api.definition.components.common.event_listener import Event
 logger = logging.getLogger(__name__)
 from langbot_plugin.api.entities import events, context
 from langbot_plugin.api.entities.builtin.platform import message as platform_message
-from langbot_plugin.api.entities.builtin.provider import message as provider_message
 
 from core import BilibiliParser, GitParser, DouyinParser, ScreenshotParser, AcFunParser, WeiboParser, NGAParser, XHSparser, YoutubeParser
 
@@ -23,7 +23,6 @@ class DefaultEventListener(EventListener):
     async def initialize(self):
         await super().initialize()
 
-        self.block_reply_link_parse = self.plugin.get_config().get("block_reply_link_parse", True)
         self.screensnap_enabled = self.plugin.get_config().get("screenshotsnap", False)
         self.enable_github_gitee = self.plugin.get_config().get("enable_github_gitee", True)
         self.enable_bilibili = self.plugin.get_config().get("enable_bilibili", True)
@@ -49,57 +48,59 @@ class DefaultEventListener(EventListener):
         @self.handler(events.PersonMessageReceived)
         @self.handler(events.GroupMessageReceived)
         async def handler(event_context: context.EventContext):
-            msg = str(event_context.event.message_chain).strip()
+            # 只从 Plain 文本获取当前消息内容，避免 Quote 中的原消息被包含进来
+            msg_parts = []
+            for component in event_context.event.message_chain:
+                if isinstance(component, platform_message.Plain):
+                    msg_parts.append(component.text)
+            msg = "".join(msg_parts).strip()
             # print(f"Received message: {event_context}")
 
-            # 检查是否为回复消息，并获取 Quote 组件
+            # 检查是否为回复消息，并获取原消息中的链接
             quote = event_context.event.message_chain.get_first(platform_message.Quote)
-            is_reply_with_link = False
+            origin_link_match = None
 
             if quote is not None and quote.origin is not None:
                 # 检查被引用的原消息中是否包含链接
                 origin_msg = str(quote.origin).strip()
-                logger.info(f"[LinkAnaly] 检测到 Quote 组件，原消息内容: {origin_msg[:100]}...")
+                logger.info(f"[LinkAnaly] 检测到 Quote 组件，原消息内容: {origin_msg[:150]}...")
                 for platform in self.link_handlers.values():
-                    if self._match_link(origin_msg, platform["patterns"]):
-                        is_reply_with_link = True
-                        logger.info(f"[LinkAnaly] 原消息中包含链接，标记为 is_reply_with_link=True")
+                    origin_match = self._match_link(origin_msg, platform["patterns"])
+                    if origin_match:
+                        origin_link_match = origin_match
+                        logger.info(f"[LinkAnaly] 原消息中包含链接: {origin_match.group(0)}")
                         break
-
-            # 如果是回复消息且原消息包含链接，始终跳过链接解析（防止重复解析）
-            if is_reply_with_link:
-                logger.info(f"[LinkAnaly] 拦截回复消息中的链接解析，block_reply_link_parse={self.block_reply_link_parse}")
-                # 如果开启了拦截，还阻止 AI/TTS 处理
-                if self.block_reply_link_parse:
-                    logger.info(f"[LinkAnaly] 开关已开启，阻止 AI/TTS 处理")
-                    event_context.prevent_default()
-                    event_context.prevent_postorder()
-                return
-
-            # 如果开启了拦截回复消息中的链接解析
-            if self.block_reply_link_parse:
-                # 先检查消息中是否包含可识别的链接
-                has_link = False
-                for platform in self.link_handlers.values():
-                    if self._match_link(msg, platform["patterns"]):
-                        has_link = True
-                        break
-
-                # 只有同时满足「是回复消息」+「包含链接」才拦截
-                if has_link:
-                    is_reply = (
-                        platform_message.At in event_context.event.message_chain
-                        or platform_message.Image in event_context.event.message_chain
-                    )
-                    if is_reply:
-                        event_context.prevent_default()
-                        event_context.prevent_postorder()
-                        return
 
             # 遍历所有支持平台
             for platform in self.link_handlers.values():
                 match = self._match_link(msg, platform["patterns"])
                 if match:
+                    current_link_text = match.group(0)
+                    
+                    # 如果是回复消息且原消息有链接，检查是否是相同的链接
+                    if origin_link_match:
+                        origin_link_text = origin_link_match.group(0)
+                        # 提取核心链接信息进行比较（只比较域名+路径，忽略协议和查询参数）
+                        try:
+                            origin_parsed = urllib.parse.urlparse(origin_link_text)
+                            current_parsed = urllib.parse.urlparse(current_link_text)
+                            
+                            # 比较：netloc(域名) + path(路径)
+                            origin_key = f"{origin_parsed.netloc}{origin_parsed.path}".rstrip("/")
+                            current_key = f"{current_parsed.netloc}{current_parsed.path}".rstrip("/")
+                            
+                            logger.info(f"[LinkAnaly] 链接对比 - 原: {origin_key} | 当前: {current_key}")
+                            
+                            if origin_key == current_key:
+                                logger.info(f"[LinkAnaly] ✓ 拦截重复链接解析: {current_link_text}")
+                                event_context.prevent_default()
+                                event_context.prevent_postorder()
+                                return
+                            else:
+                                logger.info(f"[LinkAnaly] ✗ 链接不同，继续解析新链接")
+                        except Exception as e:
+                            logger.info(f"[LinkAnaly] 链接比较异常: {str(e)}，继续解析")
+                    
                     # 调用解析器处理
                     result = await platform["handler"](match)
                     

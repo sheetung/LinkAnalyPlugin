@@ -7,5 +7,6 @@ from .weibo import WeiboParser
 from .nga import NGAParser
 from .xhs import XHSparser
 from .youtube import YoutubeParser
+from .utils import format_count, async_request
 
-__all__ = ["BilibiliParser", "GitParser", "DouyinParser", "ScreenshotParser", "AcFunParser", "WeiboParser", "NGAParser", "XHSparser", "YoutubeParser"]
+__all__ = ["BilibiliParser", "GitParser", "DouyinParser", "ScreenshotParser", "AcFunParser", "WeiboParser", "NGAParser", "XHSparser", "YoutubeParser", "format_count", "async_request"]
