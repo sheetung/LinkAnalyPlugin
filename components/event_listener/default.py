@@ -1,5 +1,6 @@
 from __future__ import annotations
 import re
+import logging
 from typing import Optional, Tuple
 import sys
 import os
@@ -8,6 +9,8 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from langbot_plugin.api.definition.components.common.event_listener import EventListener
+
+logger = logging.getLogger(__name__)
 from langbot_plugin.api.entities import events, context
 from langbot_plugin.api.entities.builtin.platform import message as platform_message
 from langbot_plugin.api.entities.builtin.provider import message as provider_message
@@ -20,6 +23,7 @@ class DefaultEventListener(EventListener):
     async def initialize(self):
         await super().initialize()
 
+        self.block_reply_link_parse = self.plugin.get_config().get("block_reply_link_parse", True)
         self.screensnap_enabled = self.plugin.get_config().get("screenshotsnap", False)
         self.enable_github_gitee = self.plugin.get_config().get("enable_github_gitee", True)
         self.enable_bilibili = self.plugin.get_config().get("enable_bilibili", True)
@@ -46,6 +50,50 @@ class DefaultEventListener(EventListener):
         @self.handler(events.GroupMessageReceived)
         async def handler(event_context: context.EventContext):
             msg = str(event_context.event.message_chain).strip()
+
+            # 检查是否为回复消息，并获取 Quote 组件
+            quote = event_context.event.message_chain.get_first(platform_message.Quote)
+            is_reply_with_link = False
+
+            if quote is not None and quote.origin is not None:
+                # 检查被引用的原消息中是否包含链接
+                origin_msg = str(quote.origin).strip()
+                logger.info(f"[LinkAnaly] 检测到 Quote 组件，原消息内容: {origin_msg[:100]}...")
+                for platform in self.link_handlers.values():
+                    if self._match_link(origin_msg, platform["patterns"]):
+                        is_reply_with_link = True
+                        logger.info(f"[LinkAnaly] 原消息中包含链接，标记为 is_reply_with_link=True")
+                        break
+
+            # 如果是回复消息且原消息包含链接，始终跳过链接解析（防止重复解析）
+            if is_reply_with_link:
+                logger.info(f"[LinkAnaly] 拦截回复消息中的链接解析，block_reply_link_parse={self.block_reply_link_parse}")
+                # 如果开启了拦截，还阻止 AI/TTS 处理
+                if self.block_reply_link_parse:
+                    logger.info(f"[LinkAnaly] 开关已开启，阻止 AI/TTS 处理")
+                    event_context.prevent_default()
+                    event_context.prevent_postorder()
+                return
+
+            # 如果开启了拦截回复消息中的链接解析
+            if self.block_reply_link_parse:
+                # 先检查消息中是否包含可识别的链接
+                has_link = False
+                for platform in self.link_handlers.values():
+                    if self._match_link(msg, platform["patterns"]):
+                        has_link = True
+                        break
+
+                # 只有同时满足「是回复消息」+「包含链接」才拦截
+                if has_link:
+                    is_reply = (
+                        platform_message.At in event_context.event.message_chain
+                        or platform_message.Image in event_context.event.message_chain
+                    )
+                    if is_reply:
+                        event_context.prevent_default()
+                        event_context.prevent_postorder()
+                        return
 
             # 遍历所有支持平台
             for platform in self.link_handlers.values():
@@ -104,7 +152,7 @@ class DefaultEventListener(EventListener):
             self.link_handlers["bilibili"] = {
                 "patterns": [
                     r"www\.bilibili\.com/video/(BV\w+)",
-                    r"b23\.tv/(BV\w+)",
+                    r"b23\.tv/(\w+)",  # 短链接，ID 不一定是 BV 开头
                     r"www\.bilibili\.com/video/av(\d+)"
                 ],
                 "handler": self.bilibili_parser.handle

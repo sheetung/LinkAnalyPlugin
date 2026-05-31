@@ -4,7 +4,7 @@ metadata:
   author: sheetung
   name: LinkAnaly
   repository: 'https://github.com/sheetung/LinkAnalyPlugin'
-  version: 1.6.3
+  version: 1.6.7
   description:
     en_US: Parses links in chats and sends screenshots for unparsed websites
     zh_Hans: 对聊天中的链接进行解析,以及针对未解析网站截图发送
@@ -14,6 +14,16 @@ metadata:
   icon: assets/favicon.ico
 spec:
   config:
+    - name: block_reply_link_parse
+      type: boolean
+      label:
+        en_US: 'Block link parsing in reply messages'
+        zh_Hans: '拦截回复消息中的链接解析'
+      description:
+        en_US: 'When enabled, skip link parsing for reply/quote messages to avoid duplicate parsing'
+        zh_Hans: '开启后，当消息是回复/引用消息时，跳过链接解析，避免重复触发'
+      required: false
+      default: true
     - name: enable_github_gitee
       type: boolean
       label:
